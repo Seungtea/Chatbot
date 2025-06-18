@@ -1,0 +1,944 @@
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>챗봇 제작 통합 매뉴얼</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: #718096;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            white-space: nowrap;
+            min-width: 120px;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-tab:hover {
+            background: #f7fafc;
+        }
+
+        .nav-tab.active:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section h2 {
+            color: #4a5568;
+            font-size: 2em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .template-box {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .template-title {
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .comparison-section {
+            margin: 30px 0;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .comparison-card {
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .good-example {
+            background: linear-gradient(135deg, #e6fffa 0%, #f0fff4 100%);
+            border: 2px solid #68d391;
+        }
+
+        .bad-example {
+            background: linear-gradient(135deg, #fed7d7 0%, #fed7e2 100%);
+            border: 2px solid #f56565;
+        }
+
+        .comparison-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .good-example .comparison-title {
+            color: #22543d;
+        }
+
+        .bad-example .comparison-title {
+            color: #742a2a;
+        }
+
+        .comparison-icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .template-generator {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .generator-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 5px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .form-textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .generated-template {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            min-height: 200px;
+        }
+
+        .character-counter {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .counter-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        .counter-bar {
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .counter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #68d391 0%, #38b2ac 50%, #f6ad55 80%, #f56565 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .checklist {
+            margin: 20px 0;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f7fafc;
+            border-radius: 10px;
+            border-left: 4px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .checklist-item:hover {
+            border-left-color: #667eea;
+            background: #edf2f7;
+        }
+
+        .checklist-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+
+        .checklist-content {
+            flex: 1;
+        }
+
+        .checklist-category {
+            color: #667eea;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .checklist-description {
+            color: #718096;
+            font-size: 0.95em;
+        }
+
+        .completed {
+            border-left-color: #68d391 !important;
+            background: #f0fff4 !important;
+        }
+
+        .faq-section {
+            margin: 30px 0;
+        }
+
+        .faq-item {
+            background: #f7fafc;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-question {
+            padding: 20px;
+            background: #edf2f7;
+            cursor: pointer;
+            font-weight: bold;
+            color: #2d3748;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-question:hover {
+            background: #e2e8f0;
+        }
+
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            color: #4a5568;
+        }
+
+        .faq-answer.open {
+            padding: 20px;
+            max-height: 300px;
+        }
+
+        .faq-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .faq-icon.open {
+            transform: rotate(180deg);
+        }
+
+        .memo-board {
+            background: #fef5e7;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .memo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .memo-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #744210;
+        }
+
+        .memo-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .memo-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .memo-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .memo-item-title {
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .memo-item-content {
+            color: #4a5568;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .memo-form {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .memo-form.active {
+            display: block;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.9em;
+        }
+
+        .controls-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .nav-tab {
+                min-width: auto;
+            }
+
+            .generator-controls {
+                grid-template-columns: 1fr;
+            }
+
+            .memo-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <h1>🤖 챗봇 제작 통합 매뉴얼</h1>
+            <p>교사·학생이 함께 사용하는 체계적인 챗봇 제작 가이드</p>
+            <!-- 섹션 4: 메모 게시판 -->
+        <div class="section" id="section3">
+            <h2>📝 메모 게시판</h2>
+            <p>프롬프트 아이디어, 성공 사례, 개선점 등을 자유롭게 기록하고 공유하세요.</p>
+
+            <div class="memo-board">
+                <div class="memo-header">
+                    <div class="memo-title">아이디어 메모장</div>
+                    <button class="btn btn-small" onclick="toggleMemoForm()">+ 새 메모 추가</button>
+                </div>
+
+                <!-- 메모 추가 폼 -->
+                <div class="memo-form" id="memoForm">
+                    <div class="form-group">
+                        <label class="form-label" for="memoTitle">제목</label>
+                        <input type="text" id="memoTitle" class="form-input" placeholder="메모 제목을 입력하세요">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="memoContent">내용</label>
+                        <textarea id="memoContent" class="form-textarea" placeholder="아이디어나 개선점을 자유롭게 적어보세요"></textarea>
+                    </div>
+                    <div class="controls-bar">
+                        <button class="btn" onclick="addMemo()">메모 저장</button>
+                        <button class="btn btn-secondary" onclick="cancelMemo()">취소</button>
+                    </div>
+                </div>
+
+                <!-- 메모 목록 -->
+                <div class="memo-list" id="memoList">
+                    <div class="memo-item">
+                        <div class="memo-item-title">[환경] 기후변화 챗봇 아이디어</div>
+                        <div class="memo-item-content">학생들이 실제 탄소발자국을 계산해볼 수 있는 챗봇. 일상 행동을 입력하면 CO2 배출량을 알려주고 개선 방안 제시</div>
+                    </div>
+                    <div class="memo-item">
+                        <div class="memo-item-title">[수학] 개념 시각화 방법</div>
+                        <div class="memo-item-content">복잡한 도형의 성질을 말로 설명할 때 단계별 안내와 실생활 예시를 활용하여 이해도 향상</div>
+                    </div>
+                    <div class="memo-item">
+                        <div class="memo-item-title">[과학] 실험 안전 가이드</div>
+                        <div class="memo-item-content">과학 실험 전 안전 수칙을 퀴즈 형태로 확인하고, 실험 순서를 단계별로 안내하는 챗봇</div>
+                    </div>
+                    <div class="memo-item">
+                        <div class="memo-item-title">[국어] 독서 토론 친구</div>
+                        <div class="memo-item-content">책을 읽고 나서 등장인물 분석, 주제 파악, 비판적 사고를 유도하는 질문들을 제공</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 네비게이션 탭 -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="showSection(0)">📚 프롬프트 가이드</div>
+            <div class="nav-tab" onclick="showSection(1)">⚡ 템플릿 생성기</div>
+            <div class="nav-tab" onclick="showSection(2)">❓ FAQ</div>
+            <div class="nav-tab" onclick="showSection(3)">📝 메모 게시판</div>
+        </div>
+
+        <!-- 섹션 1: 프롬프트 가이드 -->
+        <div class="section active" id="section0">
+            <h2>📚 프롬프트 가이드</h2>
+            <p>일관성 있는 챗봇 동작을 위한 표준 프롬프트 구조와 작성 원칙입니다.</p>
+
+            <!-- 기본 템플릿 구조 -->
+            <div class="template-box">
+                <div class="template-title">📋 기본 템플릿 구조</div>
+                <div class="code-block">[Role] (60자 이내)
+챗봇의 역할과 전문성 정의. 대상 학년과 주제 분야 명시
+
+[Context] (120자 이내)
+상황, 배경, 정보 범위, 기준 연도, 참고 자료 등
+
+[Rules] (각 130자 이내)
+1) 답변 범위: 구체적인 소단원 3-5개 명시
+2) 범위 이탈 시 대응: 복귀 유도 문구와 재제안 방법
+3) 설명 방식: 난도 조절, 예시 활용, 용어 풀이 등
+4) 추가 규칙 (선택사항)
+
+[Output] (110자 이내)
+답변 구조와 단계, 길이 제한, 마무리 방식
+
+[Style] (90자 이내)
+말투, 문체, 줄바꿈 규칙 등 스타일 가이드
+
+[예시] (100자 이내)
+Q: 질문 예시 / A: 답변 예시</div>
+            </div>
+
+            <div class="template-box">
+                <div class="template-title">✏️ 핵심 작성 포인트</div>
+                <ul style="margin-left: 20px; color: #4a5568;">
+                    <li><strong>Context</strong>: 교과·기기·플랫폼 등 고정 정보 명확화 (예: "Thonny IDE 4.1, MicroPython 1.22")</li>
+                    <li><strong>Rules</strong>: 범위, 복귀 문구, 난도 규칙, 코드/표/그림 사용 규칙 등을 번호로 분리</li>
+                    <li><strong>Output</strong>: 단계, 길이, 마무리 질문 고정. 학습자 안정감 제공</li>
+                    <li><strong>Style</strong>: 존댓말/반말, 이모지 여부, 줄바꿈 규칙 등 <strong>시각적 일관성</strong> 명시</li>
+                </ul>
+            </div>
+
+            <!-- 좋은 프롬프트 vs 나쁜 프롬프트 비교 -->
+            <div class="comparison-section">
+                <h3>🔍 프롬프트 작성 비교</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-card good-example">
+                        <div class="comparison-title">
+                            <span class="comparison-icon">✅</span>
+                            좋은 프롬프트
+                        </div>
+                        <div class="code-block" style="font-size: 0.8em;">[Role] 중학생이 이해하기 쉬운 기후변화 해결책 안내자
+[Context] 2030년 기준, IPCC 보고서 데이터, 국내외 정책 현황
+[Rules]
+1) 질문 범위: 온실가스·신재생에너지·탄소중립·개인실천방안만 답변
+2) 범위 외 질문: "기후 문제에 집중해볼까요? 다른 궁금한 점이 있나요?"
+3) 어려운 용어는 쉬운 말로 설명, 구체적 수치 제시, 실생활 예시 포함
+[Output] ①핵심답변 1줄 ②상세설명 2-3줄 ③실천방법 제시 ④"어떻게 생각해?"
+[Style] 친근한 존댓말, 감정 표현은 :) :( 등 텍스트 활용, 80자마다 줄바꿈</div>
+                    </div>
+                    <div class="comparison-card bad-example">
+                        <div class="comparison-title">
+                            <span class="comparison-icon">❌</span>
+                            나쁜 프롬프트
+                        </div>
+                        <div class="code-block" style="font-size: 0.8em;">당신은 기후변화 전문가입니다. 모든 질문에 답변하세요.
+친절하게 대답하고 학생들이 이해할 수 있게 설명해주세요.
+전문적인 내용도 포함해서 자세히 설명해주시면 됩니다.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 섹션 2: 템플릿 자동 생성기 -->
+        <div class="section" id="section1">
+            <h2>⚡ 템플릿 자동 생성기</h2>
+            <p>기본 정보를 입력하면 표준 프롬프트 템플릿을 자동으로 생성합니다.</p>
+
+            <div class="generator-controls">
+                <div class="form-group">
+                    <label class="form-label" for="genSubject">주제/과목</label>
+                    <input type="text" id="genSubject" class="form-input" placeholder="예: 기후변화, 수학, 역사" oninput="generateTemplate()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="genGrade">학년</label>
+                    <select id="genGrade" class="form-select" onchange="generateTemplate()">
+                        <option value="">선택하세요</option>
+                        <option value="초등 1학년">초등 1학년</option>
+                        <option value="초등 2학년">초등 2학년</option>
+                        <option value="초등 3학년">초등 3학년</option>
+                        <option value="초등 4학년">초등 4학년</option>
+                        <option value="초등 5학년">초등 5학년</option>
+                        <option value="초등 6학년">초등 6학년</option>
+                        <option value="중학교 1학년">중학교 1학년</option>
+                        <option value="중학교 2학년">중학교 2학년</option>
+                        <option value="중학교 3학년">중학교 3학년</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="genScope">학습 범위</label>
+                    <input type="text" id="genScope" class="form-input" placeholder="예: 온실가스, 분수의 덧셈, 조선시대" oninput="generateTemplate()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="genTone">말투</label>
+                    <select id="genTone" class="form-select" onchange="generateTemplate()">
+                        <option value="">선택하세요</option>
+                        <option value="친근한 존댓말">친근한 존댓말</option>
+                        <option value="정중한 존댓말">정중한 존댓말</option>
+                        <option value="친근한 반말">친근한 반말</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="controls-bar">
+                <button class="btn" onclick="generateTemplate()">템플릿 생성</button>
+                <button class="btn btn-secondary" onclick="copyTemplate()">복사하기</button>
+                <button class="btn btn-secondary" onclick="downloadTemplate()">다운로드</button>
+                <button class="btn btn-secondary" onclick="clearGenerator()">초기화</button>
+            </div>
+
+            <!-- 글자수 표시 -->
+            <div style="text-align: center; margin: 10px 0; font-weight: bold; color: #4a5568;">
+                <span id="templateCharCount">0자 / 1,000자</span>
+            </div>
+
+            <div class="generated-template" id="generatedTemplate">여기에 생성된 템플릿이 표시됩니다.</div>
+        </div>
+
+        <!-- 섹션 3: 메모 게시판 -->
+        <div class="section" id="section2">
+            <h2>📝 메모 게시판</h2>
+            <p>프롬프트 아이디어, 성공 사례, 개선점 등을 자유롭게 기록하고 공유하세요.</p>
+
+            <div class="memo-board">
+                <div class="memo-header">
+                    <div class="memo-title">아이디어 메모장</div>
+                    <button class="btn btn-small" onclick="toggleMemoForm()">+ 새 메모 추가</button>
+                </div>
+
+                <!-- 메모 추가 폼 -->
+                <div class="memo-form" id="memoForm">
+                    <div class="form-group">
+                        <label class="form-label" for="memoTitle">제목</label>
+                        <input type="text" id="memoTitle" class="form-input" placeholder="메모 제목을 입력하세요">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="memoContent">내용</label>
+                        <textarea id="memoContent" class="form-textarea" placeholder="아이디어나 개선점을 자유롭게 적어보세요"></textarea>
+                    </div>
+                    <div class="controls-bar">
+                        <button class="btn" onclick="addMemo()">메모 저장</button>
+                        <button class="btn btn-secondary" onclick="cancelMemo()">취소</button>
+                    </div>
+                </div>
+
+                <!-- 메모 목록 -->
+                <div class="memo-list" id="memoList">
+                    <div class="memo-item">
+                        <div class="memo-item-title">[환경] 기후변화 챗봇 아이디어</div>
+                        <div class="memo-item-content">학생들이 실제 탄소발자국을 계산해볼 수 있는 챗봇. 일상 행동을 입력하면 CO2 배출량을 알려주고 개선 방안 제시</div>
+                    </div>
+                    <div class="memo-item">
+                        <div class="memo-item-title">[수학] 개념 시각화 방법</div>
+                        <div class="memo-item-content">복잡한 함수나 도형을 말로 설명할 때 ASCII 아트나 텍스트 다이어그램 활용하면 이해도 향상</div>
+                    </div>
+                    <div class="memo-item">
+                        <div class="memo-item-title">[과학] 실험 안전 체크봇</div>
+                        <div class="memo-item-content">과학 실험 전 안전 수칙을 퀴즈 형태로 확인하고, 실험 순서를 단계별로 안내하는 챗봇</div>
+                    </div>
+                    <div class="memo-item">
+                        <div class="memo-item-title">[국어] 독서 토론 도우미</div>
+                        <div class="memo-item-content">책을 읽고 나서 등장인물 분석, 주제 파악, 비판적 사고를 유도하는 질문들을 제공</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 섹션 전환
+        function showSection(index) {
+            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(`section${index}`).classList.add('active');
+            document.querySelectorAll('.nav-tab')[index].classList.add('active');
+        }
+
+        // 템플릿 생성기
+        function generateTemplate() {
+            const subject = document.getElementById('genSubject').value;
+            const grade = document.getElementById('genGrade').value;
+            const scope = document.getElementById('genScope').value;
+            const tone = document.getElementById('genTone').value;
+
+            if (!subject || !grade || !scope || !tone) {
+                document.getElementById('generatedTemplate').textContent = '모든 필드를 입력해주세요.';
+                document.getElementById('templateCharCount').textContent = '0자 / 1,000자';
+                return;
+            }
+
+            const template = `[Role] ${grade}이 이해할 수 있는 ${subject} 전문가입니다.
+
+[Context] ${subject} 교육과정 기준, ${scope} 관련 내용, 최신 교육 자료 및 실생활 연계 사례.
+
+[Rules]
+1) 질문은 ${scope} 범위에서만 답변합니다.
+2) 범위를 벗어난 질문엔 "${subject} 학습에 집중해볼까요? 다른 궁금한 점이 있나요?"라고 답하고 관련 주제를 재제안합니다.
+3) 어려운 용어는 쉬운 말로 바꾸고, 구체적인 예시를 포함합니다. ${grade} 수준에 맞는 설명을 제공합니다.
+
+[Output] ①핵심 답변 1문장 ②상세 설명 2-3문장 ③실생활 예시나 활용 방법 ④"어떻게 생각해?" 또는 "더 궁금한 게 있어?" 질문으로 마무리.
+
+[Style] ${tone}, 80자마다 줄바꿈, 학습자 친화적 톤.
+
+(예시) Q: ${scope}에 대해 알려줘 / A: ${scope}는 ${subject}에서 중요한 개념이에요...`;
+
+            document.getElementById('generatedTemplate').textContent = template;
+            
+            // 글자수 업데이트
+            const charCount = template.length;
+            const charCountDisplay = document.getElementById('templateCharCount');
+            charCountDisplay.textContent = `${charCount}자 / 1,000자`;
+            
+            // 글자수에 따른 색상 변경
+            if (charCount > 1000) {
+                charCountDisplay.style.color = '#f56565';
+            } else if (charCount > 900) {
+                charCountDisplay.style.color = '#f6ad55';
+            } else {
+                charCountDisplay.style.color = '#68d391';
+            }
+        }
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMemosFromStorage();
+        });
+
+        // FAQ 토글
+        function toggleFaq(element) {
+            const answer = element.nextElementSibling;
+            const icon = element.querySelector('.faq-icon');
+            
+            answer.classList.toggle('open');
+            icon.classList.toggle('open');
+        }
+
+        // 템플릿 생성기
+        function generateTemplate() {
+            const subject = document.getElementById('genSubject').value;
+            const grade = document.getElementById('genGrade').value;
+            const scope = document.getElementById('genScope').value;
+            const tone = document.getElementById('genTone').value;
+
+            if (!subject || !grade || !scope || !tone) {
+                document.getElementById('generatedTemplate').textContent = '모든 필드를 입력해주세요.';
+                return;
+            }
+
+            const template = `[Role] ${grade}이 이해할 수 있는 ${subject} 전문가입니다.
+
+[Context] ${subject} 교육과정 기준, ${scope} 관련 내용, 최신 교육 자료 및 실생활 연계 사례.
+
+[Rules]
+1) 질문은 ${scope} 범위에서만 답변합니다.
+2) 범위를 벗어난 질문엔 "${subject} 학습에 집중해볼까요? 다른 궁금한 점이 있나요?"라고 답하고 관련 주제를 재제안합니다.
+3) 어려운 용어는 쉬운 말로 바꾸고, 구체적인 예시를 포함합니다. ${grade} 수준에 맞는 설명을 제공합니다.
+
+[Output] ①핵심 답변 1문장 ②상세 설명 2-3문장 ③실생활 예시나 활용 방법 ④"어떻게 생각해?" 또는 "더 궁금한 게 있어?" 질문으로 마무리.
+
+[Style] ${tone}, 감정 표현은 :) :( 등 텍스트 활용, 80자마다 줄바꿈, 학습자 친화적 톤.
+
+(예시) Q: ${scope}에 대해 알려줘 / A: ${scope}는 ${subject}에서 중요한 개념이에요...`;
+
+            document.getElementById('generatedTemplate').textContent = template;
+        }
+
+        function copyTemplate() {
+            const template = document.getElementById('generatedTemplate').textContent;
+            if (template === '여기에 생성된 템플릿이 표시됩니다.' || template === '모든 필드를 입력해주세요.') {
+                alert('먼저 템플릿을 생성해주세요.');
+                return;
+            }
+            navigator.clipboard.writeText(template).then(() => {
+                alert('템플릿이 클립보드에 복사되었습니다!');
+            });
+        }
+
+        function downloadTemplate() {
+            const template = document.getElementById('generatedTemplate').textContent;
+            if (template === '여기에 생성된 템플릿이 표시됩니다.' || template === '모든 필드를 입력해주세요.') {
+                alert('먼저 템플릿을 생성해주세요.');
+                return;
+            }
+            
+            const subject = document.getElementById('genSubject').value;
+            const blob = new Blob([template], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${subject}_챗봇_템플릿.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearGenerator() {
+            document.getElementById('genSubject').value = '';
+            document.getElementById('genGrade').value = '';
+            document.getElementById('genScope').value = '';
+            document.getElementById('genTone').value = '';
+            document.getElementById('generatedTemplate').textContent = '여기에 생성된 템플릿이 표시됩니다.';
+            document.getElementById('templateCharCount').textContent = '0자 / 1,000자';
+            document.getElementById('templateCharCount').style.color = '#4a5568';
+        }
+
+        // 메모 게시판 기능
+        let memos = [];
+
+        function toggleMemoForm() {
+            const form = document.getElementById('memoForm');
+            form.classList.toggle('active');
+        }
+
+        function addMemo() {
+            const title = document.getElementById('memoTitle').value;
+            const content = document.getElementById('memoContent').value;
+
+            if (!title || !content) {
+                alert('제목과 내용을 모두 입력해주세요.');
+                return;
+            }
+
+            const memo = {
+                id: Date.now(),
+                title: title,
+                content: content,
+                date: new Date().toLocaleDateString('ko-KR')
+            };
+
+            memos.unshift(memo);
+            saveMemoToStorage();
+            renderMemos();
+            cancelMemo();
+        }
+
+        function cancelMemo() {
+            document.getElementById('memoTitle').value = '';
+            document.getElementById('memoContent').value = '';
+            document.getElementById('memoForm').classList.remove('active');
+        }
+
+        function renderMemos() {
+            const memoList = document.getElementById('memoList');
+            
+            // 기본 메모들 유지하면서 새 메모 추가
+            const defaultMemos = memoList.innerHTML;
+            
+            let userMemosHtml = '';
+            memos.forEach(memo => {
+                userMemosHtml += `
+                    <div class="memo-item" onclick="deleteMemo(${memo.id})">
+                        <div class="memo-item-title">[메모] ${memo.title} <small>(${memo.date})</small></div>
+                        <div class="memo-item-content">${memo.content}</div>
+                    </div>
+                `;
+            });
+
+            memoList.innerHTML = userMemosHtml + defaultMemos;
+        }
+
+        function deleteMemo(id) {
+            if (confirm('이 메모를 삭제하시겠습니까?')) {
+                memos = memos.filter(memo => memo.id !== id);
+                saveMemoToStorage();
+                renderMemos();
+            }
+        }
+
+        function saveMemoToStorage() {
+            localStorage.setItem('chatbotMemos', JSON.stringify(memos));
+        }
+
+        function loadMemosFromStorage() {
+            const saved = localStorage.getItem('chatbotMemos');
+            if (saved) {
+                memos = JSON.parse(saved);
+                renderMemos();
+            }
+        }
+    </script>
+</body>
+</html>
