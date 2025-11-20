@@ -188,6 +188,25 @@ class AICameraApp {
 
         // Web Speech API 초기화
         this.initSpeechAPI();
+
+        // 페이지 로드 시 마이크 권한 요청
+        this.requestMicrophonePermission();
+    }
+
+    /**
+     * 마이크 권한 요청
+     */
+    async requestMicrophonePermission() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(track => track.stop());
+            this.updateStatus('준비 완료. 시작 버튼을 눌러주세요.', STATUS_TYPES.SUCCESS);
+        } catch (error) {
+            console.error('마이크 권한 요청 오류:', error);
+            if (error.name === 'NotAllowedError') {
+                this.updateStatus('마이크 권한이 필요합니다. 브라우저 설정에서 허용해주세요.', STATUS_TYPES.ERROR);
+            }
+        }
     }
 
     /**
