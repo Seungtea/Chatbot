@@ -67,17 +67,6 @@
             color: #9ca3af;
         }
 
-        .api-key-section {
-            border: 2px dashed #e5e7eb;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .api-key-input {
-            font-family: monospace;
-        }
-
         .recognition-history {
             max-height: 150px;
             overflow-y: auto;
@@ -99,33 +88,6 @@
 <div id="app" class="container mx-auto p-6 bg-white shadow-xl rounded-xl">
     <h1 class="text-3xl font-bold text-gray-800 mb-2 text-center">AI 카메라 사물 인식기</h1>
     <p class="text-center text-gray-600 mb-6">카메라로 물체를 비추면 AI가 인식합니다. 음성 명령도 지원합니다.</p>
-
-    <!-- API 키 설정 -->
-    <div id="api-key-section" class="api-key-section mb-4">
-        <div class="flex items-center justify-between mb-2">
-            <label for="api-key-input" class="font-semibold text-gray-700">Gemini API 키</label>
-            <button id="toggle-api-key" class="text-sm text-indigo-600 hover:text-indigo-800" onclick="app.toggleApiKeyVisibility()">
-                보기/숨기기
-            </button>
-        </div>
-        <div class="flex gap-2">
-            <input
-                type="password"
-                id="api-key-input"
-                class="api-key-input flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="API 키를 입력하세요"
-                aria-label="Gemini API 키 입력"
-            >
-            <button
-                id="save-api-key"
-                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                onclick="app.saveApiKey()"
-            >
-                저장
-            </button>
-        </div>
-        <p class="text-xs text-gray-500 mt-2">API 키는 브라우저에 안전하게 저장됩니다.</p>
-    </div>
 
     <!-- AI 상태 및 결과 표시 -->
     <div id="ai-response" class="ai-status-box mb-4 text-center bg-blue-100 text-blue-700" role="status" aria-live="polite">
@@ -182,14 +144,12 @@
 <script>
 // 상수 정의
 const CONFIG = {
+    API_KEY: 'AIzaSyCKwLcl8Jz-lcaIuAN1zN7rwfb7JuSLfGs',
     MODEL_NAME: 'gemini-2.5-flash-preview-05-20',
     RECOGNITION_INTERVAL: 2500,
     RETRY_INTERVAL: 5000,
     SPEECH_START_DELAY: 1500,
-    MAX_HISTORY: 10,
-    STORAGE_KEYS: {
-        API_KEY: 'gemini_api_key'
-    }
+    MAX_HISTORY: 10
 };
 
 // 상태 타입 정의
@@ -214,7 +174,6 @@ class AICameraApp {
             startButton: document.getElementById('start-button'),
             stopButton: document.getElementById('stop-recognition-button'),
             videoPlaceholder: document.getElementById('video-placeholder'),
-            apiKeyInput: document.getElementById('api-key-input'),
             historyContainer: document.getElementById('recognition-history')
         };
 
@@ -223,7 +182,6 @@ class AICameraApp {
             recognitionInterval: null,
             isRecognitionActive: false,
             isAwaitingCommand: false,
-            apiKey: '',
             recognitionHistory: [],
             voicesLoaded: false
         };
@@ -231,8 +189,24 @@ class AICameraApp {
         // Web Speech API 초기화
         this.initSpeechAPI();
 
-        // 저장된 API 키 로드
-        this.loadApiKey();
+        // 페이지 로드 시 마이크 권한 요청
+        this.requestMicrophonePermission();
+    }
+
+    /**
+     * 마이크 권한 요청
+     */
+    async requestMicrophonePermission() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(track => track.stop());
+            this.updateStatus('준비 완료. 시작 버튼을 눌러주세요.', STATUS_TYPES.SUCCESS);
+        } catch (error) {
+            console.error('마이크 권한 요청 오류:', error);
+            if (error.name === 'NotAllowedError') {
+                this.updateStatus('마이크 권한이 필요합니다. 브라우저 설정에서 허용해주세요.', STATUS_TYPES.ERROR);
+            }
+        }
     }
 
     /**
@@ -328,44 +302,6 @@ class AICameraApp {
                 this.recognition.start();
             }
         }
-    }
-
-    /**
-     * API 키 저장
-     */
-    saveApiKey() {
-        const apiKey = this.elements.apiKeyInput.value.trim();
-        if (!apiKey) {
-            alert('API 키를 입력해주세요.');
-            return;
-        }
-
-        this.state.apiKey = apiKey;
-        localStorage.setItem(CONFIG.STORAGE_KEYS.API_KEY, apiKey);
-        this.updateStatus('API 키가 저장되었습니다.', STATUS_TYPES.SUCCESS);
-
-        setTimeout(() => {
-            this.updateStatus('준비 완료. 시작 버튼을 눌러주세요.', STATUS_TYPES.INFO);
-        }, 2000);
-    }
-
-    /**
-     * 저장된 API 키 로드
-     */
-    loadApiKey() {
-        const savedKey = localStorage.getItem(CONFIG.STORAGE_KEYS.API_KEY);
-        if (savedKey) {
-            this.state.apiKey = savedKey;
-            this.elements.apiKeyInput.value = savedKey;
-        }
-    }
-
-    /**
-     * API 키 표시/숨기기 토글
-     */
-    toggleApiKeyVisibility() {
-        const input = this.elements.apiKeyInput;
-        input.type = input.type === 'password' ? 'text' : 'password';
     }
 
     /**
@@ -477,13 +413,6 @@ class AICameraApp {
     async startRecognition() {
         if (this.state.isRecognitionActive) return;
 
-        // API 키 확인
-        if (!this.state.apiKey) {
-            this.updateStatus('API 키를 먼저 입력해주세요.', STATUS_TYPES.ERROR);
-            this.speak('API 키를 먼저 입력해주세요.');
-            return;
-        }
-
         const cameraStarted = await this.startCamera();
         if (!cameraStarted) {
             this.stopRecognition();
@@ -574,7 +503,7 @@ class AICameraApp {
         if (!this.state.isRecognitionActive) return;
 
         const base64Image = this.captureFrame();
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.MODEL_NAME}:generateContent?key=${this.state.apiKey}`;
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.MODEL_NAME}:generateContent?key=${CONFIG.API_KEY}`;
 
         const prompt = '카메라에 보이는 물건이 무엇인지 한국어로 가장 깔끔하게 한 단어로만 답해주세요. 예를 들어, "필통", "핸드폰", "약"과 같이 명사 하나로만 답하세요. 추가 설명은 절대 하지 마세요.';
 
@@ -649,13 +578,6 @@ class AICameraApp {
     startConversation() {
         if (!this.recognition) {
             this.updateStatus('음성 인식 API를 지원하지 않아 기능을 실행할 수 없습니다.', STATUS_TYPES.ERROR);
-            return;
-        }
-
-        if (!this.state.apiKey) {
-            this.updateStatus('API 키를 먼저 입력해주세요.', STATUS_TYPES.ERROR);
-            alert('Gemini API 키를 먼저 입력해주세요.');
-            this.elements.apiKeyInput.focus();
             return;
         }
 
