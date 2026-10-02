@@ -1,0 +1,32 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #111;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#game-container {
+  /* This container helps center the canvas */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+canvas {
+  /* Internal resolution will be scaled up.
+     Using crisp edges to retain the pixel art look. */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  /* Fallbacks for different browsers */
+  -ms-interpolation-mode: nearest-neighbor;
+  background-color: #000;
+
+  /* We will dynamically set width and height in JS to scale optimally */
+}
