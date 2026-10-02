@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>말랑 한글 탐험대 | 소리 기반 문해력 탐험</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div id="app-container">
+    <!-- 상단 상태바 & 헤더 -->
+    <header class="app-header" id="main-header">
+      <div class="profile-badge" id="profile-badge">
+        <span class="avatar-icon" id="user-avatar-display">🐰</span>
+        <span id="user-name-display">씩씩한 탐험가</span>
+      </div>
+
+      <div class="star-counter" id="star-counter">
+        <span>⭐</span>
+        <span id="star-count-text">0</span>
+      </div>
+
+      <div class="header-actions">
+        <button class="icon-btn btn-hint" id="btn-open-hint" title="모국어 힌트">
+          🌐 <span>모국어 힌트</span>
+        </button>
+        <button class="icon-btn" id="btn-open-encyclopedia" title="내 도감 보기">
+          📖 <span>내 도감</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- [뷰 1] 시작 & 프로필 설정 화면 -->
+    <section class="view-section" id="view-welcome">
+      <div class="welcome-card">
+        <h1 class="app-title">🌟 말랑 한글 탐험대</h1>
+        <p class="app-subtitle">소리를 듣고, 누르고, 나만의 도감을 모아봐요!</p>
+
+        <p style="font-weight: 700; font-size: 1.2rem; margin-bottom: 12px;">마음에 드는 얼굴을 골라보세요:</p>
+        <div class="avatar-selection-grid">
+          <button class="avatar-opt selected" data-avatar="🐰">🐰</button>
+          <button class="avatar-opt" data-avatar="🐻">🐻</button>
+          <button class="avatar-opt" data-avatar="🦁">🦁</button>
+          <button class="avatar-opt" data-avatar="🐼">🐼</button>
+        </div>
+
+        <div class="nickname-input-box">
+          <input type="text" id="nickname-input" placeholder="내 이름이나 별명" value="씩씩한 탐험가" maxlength="8">
+        </div>
+
+        <button class="big-primary-btn" id="btn-start-adventure">🚀 탐험 시작하기</button>
+      </div>
+    </section>
+
+    <!-- [뷰 2] 수집 테마 선택 화면 -->
+    <section class="view-section hidden" id="view-theme">
+      <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 8px;">어떤 도감을 모으고 싶나요?</h2>
+      <p style="color: var(--text-muted); font-size: 1.2rem; margin-bottom: 20px;">문제를 맞힐 때마다 멋진 친구들이 도감에 모여요!</p>
+
+      <div class="theme-grid">
+        <div class="theme-card theme-dino" data-theme="dino">
+          <div class="theme-icon">🦖</div>
+          <h3>쥐라기 공룡 세계</h3>
+          <p>티라노, 트리케라톱스 등 거대 공룡</p>
+        </div>
+
+        <div class="theme-card theme-animal" data-theme="animal">
+          <div class="theme-icon">🦁</div>
+          <h3>신비한 동물원</h3>
+          <p>사자, 호랑이, 코끼리 등 동물 친구들</p>
+        </div>
+
+        <div class="theme-card theme-insect" data-theme="insect">
+          <div class="theme-icon">🐞</div>
+          <h3>숲속 곤충 탐험</h3>
+          <p>장수풍뎅이, 사슴벌레, 나비와 벌</p>
+        </div>
+
+        <div class="theme-card theme-flower" data-theme="flower">
+          <div class="theme-icon">🌸</div>
+          <h3>알록달록 꽃과 식물</h3>
+          <p>해바라기, 무궁화, 민들레와 나무</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- [뷰 3] 문해력 퀘스트 학습 화면 -->
+    <section class="view-section hidden" id="view-quest">
+      <div class="quest-top-bar">
+        <div class="stage-badge" id="quest-stage-badge">1단계: 소리와 그림 찾기</div>
+        <button class="speaker-btn" id="btn-speak-question" title="소리 다시 듣기">🔊</button>
+      </div>
+
+      <div class="question-text-bubble" id="quest-instruction-text">
+        소리를 잘 듣고 알맞은 그림을 골라보세요!
+      </div>
+
+      <!-- 퀴즈 인터랙션 영역 (JS로 동적 렌더링) -->
+      <div id="quiz-interaction-container" style="width: 100%; display: flex; justify-content: center;">
+        <!-- 1단계: 카드 그리드 / 2단계: 문장 블록 / 3단계: 상황 선택지 -->
+      </div>
+    </section>
+
+    <!-- [뷰 4] 도감 모아보기 화면 -->
+    <section class="view-section hidden" id="view-encyclopedia">
+      <div style="display: flex; justify-content: space-between; width: 100%; max-width: 820px; align-items: center; margin-bottom: 20px;">
+        <h2 id="enc-theme-title" style="font-size: 1.8rem; font-weight: 800;">📖 내 도감</h2>
+        <button class="icon-btn" id="btn-close-encyclopedia">⬅️ 돌아가기</button>
+      </div>
+
+      <div class="encyclopedia-grid" id="enc-cards-grid">
+        <!-- 동적으로 도감 카드 생성 -->
+      </div>
+    </section>
+
+    <!-- [모달 1] 다문화 모국어 힌트 팝업 -->
+    <div class="modal-overlay hidden" id="modal-hint">
+      <div class="modal-content">
+        <h3 class="modal-title">🌐 모국어 힌트</h3>
+        <p id="hint-target-word" style="font-size: 1.5rem; font-weight: 800; color: #2B6CB0; margin-bottom: 16px;">단어</p>
+
+        <div class="hint-lang-list" id="hint-translations-container">
+          <!-- 번역 항목들 동적 표시 -->
+        </div>
+
+        <button class="big-primary-btn" id="btn-close-hint" style="padding: 12px 36px; font-size: 1.2rem; margin-top: 12px;">확인</button>
+      </div>
+    </div>
+
+    <!-- [모달 2] 도감 카드 잠금 해제 축하 팝업 -->
+    <div class="modal-overlay hidden" id="modal-unlock">
+      <div class="modal-content" style="background: #FFFDF0; border: 4px solid #F6E05E;">
+        <h3 class="modal-title" style="color: #D69E2E;">🎉 새로운 친구를 발견했어요!</h3>
+        <div id="unlock-card-emoji" style="font-size: 5rem; margin: 16px 0;">🦖</div>
+        <h4 id="unlock-card-name" style="font-size: 1.8rem; font-weight: 900; margin-bottom: 8px;">티라노사우루스</h4>
+        <p id="unlock-card-desc" style="font-size: 1.2rem; color: #4A5568; margin-bottom: 24px;">도감에 멋진 친구가 등록되었어요!</p>
+        <button class="big-primary-btn" id="btn-close-unlock" style="background: #ECC94B; color: #744210; box-shadow: 0 6px 0 #D69E2E;">신나요! 🥳</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
