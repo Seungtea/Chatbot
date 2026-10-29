@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>레트로 붕어빵 타이쿤</title>
+  <style>
+    :root {
+      --bg-color: #2b1d0c;
+      --card-bg: #3d2a14;
+      --accent-gold: #f5ad35;
+      --accent-red: #e74c3c;
+      --accent-green: #2ecc71;
+      --text-color: #fff8e7;
+      --font-pixel: 'DungGeunMo', 'Courier New', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-pixel);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 440px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header {
+      text-align: center;
+      width: 100%;
+    }
+
+    h1 {
+      margin: 4px 0;
+      font-size: 22px;
+      color: var(--accent-gold);
+      text-shadow: 2px 2px 0px #000;
+      letter-spacing: -0.5px;
+    }
+
+    .rule-box {
+      background: var(--card-bg);
+      border: 2px solid var(--accent-gold);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      text-align: center;
+      line-height: 1.4;
+      box-shadow: 0 4px 0 #1a1005;
+      color: #ffeaa7;
+      word-break: keep-all;
+    }
+
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      background: #1d1308;
+      border: 2px solid #5c4020;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .hud-item span {
+      color: var(--accent-gold);
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      background-color: #1a1005;
+      border: 4px solid var(--accent-gold);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 6px 0 #000;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      image-rendering: pixelated;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .btn {
+      background: linear-gradient(180deg, #f39c12 0%, #d35400 100%);
+      border: 3px solid #fff8e7;
+      border-radius: 12px;
+      padding: 16px 8px;
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+      font-family: inherit;
+      text-align: center;
+      box-shadow: 0 6px 0 #7e3200, 0 8px 10px rgba(0,0,0,0.5);
+      cursor: pointer;
+      active: translateY(4px);
+      transition: transform 0.05s, box-shadow 0.05s;
+    }
+
+    .btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #7e3200, 0 3px 5px rgba(0,0,0,0.5);
+    }
+
+    .btn-select {
+      background: linear-gradient(180deg, #3498db 0%, #2980b9 100%);
+      box-shadow: 0 6px 0 #1a5276, 0 8px 10px rgba(0,0,0,0.5);
+    }
+    .btn-select:active {
+      box-shadow: 0 2px 0 #1a5276, 0 3px 5px rgba(0,0,0,0.5);
+    }
+
+    .btn-action {
+      background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%);
+      box-shadow: 0 6px 0 #196f3d, 0 8px 10px rgba(0,0,0,0.5);
+    }
+    .btn-action:active {
+      box-shadow: 0 2px 0 #196f3d, 0 3px 5px rgba(0,0,0,0.5);
+    }
+
+    .btn-sub {
+      font-size: 12px;
+      display: block;
+      opacity: 0.85;
+      margin-top: 4px;
+      font-weight: normal;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 10, 5, 0.88);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 10;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .overlay.hidden {
+      display: none;
+    }
+
+    .overlay h2 {
+      color: var(--accent-gold);
+      font-size: 28px;
+      margin: 0;
+      text-shadow: 2px 2px 0 #000;
+    }
+
+    .final-score {
+      font-size: 32px;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .rank-text {
+      font-size: 16px;
+      color: #ffeaa7;
+      background: rgba(255,255,255,0.1);
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px dashed var(--accent-gold);
+    }
+
+    .retry-btn {
+      background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%);
+      border: 3px solid #fff;
+      color: #fff;
+      padding: 12px 28px;
+      font-size: 20px;
+      font-family: inherit;
+      font-weight: bold;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #7b241c;
+      margin-top: 10px;
+    }
+
+    .retry-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #7b241c;
+    }
+
+    .key-hint {
+      font-size: 11px;
+      color: #a08870;
+      text-align: center;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>🐟 레트로 붕어빵 타이쿤 🐟</h1>
+    </header>
+
+    <!-- 규칙 딱 한 문장 -->
+    <div class="rule-box">
+      [틀 선택] 버튼으로 위치를 옮기고 [동작] 버튼 하나로 반죽 붓기·뒤집기·판매를 조작해 1분 동안 최고 점수를 달성하세요!
+    </div>
+
+    <div class="hud">
+      <div class="hud-item">⏱️ 남은시간: <span id="time-display">60</span>초</div>
+      <div class="hud-item">💰 점수: <span id="score-display">0</span>점</div>
+    </div>
+
+    <div class="canvas-wrapper">
+      <canvas id="gameCanvas" width="400" height="500"></canvas>
+
+      <!-- 게임 오버 / 시작 오버레이 -->
+      <div id="overlay" class="overlay">
+        <h2 id="overlay-title">붕어빵 장사 준비!</h2>
+        <div id="overlay-msg" style="font-size: 14px; color: #dcdde1; line-height: 1.5;">
+          손님이 기다리고 있어요!<br>노릇노릇 맛있는 붕어빵을 구워보세요.
+        </div>
+        <div id="result-box" style="display: none;">
+          <div style="font-size: 14px; color: #aaa;">최종 판매 점수</div>
+          <div class="final-score" id="final-score-val">0점</div>
+          <div class="rank-text" id="rank-val">붕어빵 초보자</div>
+        </div>
+        <button id="start-btn" class="retry-btn">게임 시작 🚀</button>
+      </div>
+    </div>
+
+    <!-- 2버튼 컨트롤 -->
+    <div class="controls">
+      <button id="btn-select" class="btn btn-select">
+        🔘 틀 선택
+        <span class="btn-sub">(단축키: Z 또는 ←)</span>
+      </button>
+      <button id="btn-action" class="btn btn-action">
+        🔴 동작 / 판매
+        <span class="btn-sub">(단축키: X 또는 Space)</span>
+      </button>
+    </div>
+
+    <div class="key-hint">
+      💡 모바일은 화면 하단 버튼 터치 / PC는 키보드로 손쉽게 플레이 가능합니다!
+    </div>
+  </div>
+
+  <script>
+    // --- Web Audio API (사운드 효과) ---
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, type, duration, vol=0.1) {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function playSound(name) {
+      initAudio();
+      if (name === 'select') {
+        playTone(440, 'square', 0.08, 0.08);
+      } else if (name === 'pour') {
+        playTone(260, 'sine', 0.15, 0.12);
+      } else if (name === 'flip') {
+        playTone(587.33, 'triangle', 0.1, 0.1);
+      } else if (name === 'serve') {
+        // 성공 챠링!
+        playTone(523.25, 'sine', 0.1, 0.15);
+        setTimeout(() => playTone(659.25, 'sine', 0.1, 0.15), 80);
+        setTimeout(() => playTone(783.99, 'sine', 0.2, 0.15), 160);
+      } else if (name === 'burnt') {
+        playTone(150, 'sawtooth', 0.25, 0.15);
+      } else if (name === 'over') {
+        playTone(300, 'sawtooth', 0.3, 0.15);
+        setTimeout(() => playTone(200, 'sawtooth', 0.4, 0.15), 250);
+      }
+    }
+
+    // --- 게임 상태 및 데이터 ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const STATE = {
+      EMPTY: 0,     // 빈 틀
+      POURED: 1,    // 반죽 부음 (익어가는 중)
+      FLIPPED: 2,   // 뒤집음 (반대쪽 익는 중)
+      PERFECT: 3,   // 완벽히 익음 (골든 붕어빵)
+      BURNT: 4      // 탄 붕어빵
+    };
+
+    let score = 0;
+    let timeLeft = 60;
+    let timerInterval = null;
+    let isPlaying = false;
+
+    // 6개 붕어빵 틀 (2행 3열)
+    let selectedMoldIndex = 0;
+    const molds = [
+      { id: 0, state: STATE.EMPTY, progress: 0, timer: 0 },
+      { id: 1, state: STATE.EMPTY, progress: 0, timer: 0 },
+      { id: 2, state: STATE.EMPTY, progress: 0, timer: 0 },
+      { id: 3, state: STATE.EMPTY, progress: 0, timer: 0 },
+      { id: 4, state: STATE.EMPTY, progress: 0, timer: 0 },
+      { id: 5, state: STATE.EMPTY, progress: 0, timer: 0 },
+    ];
+
+    // 손님 생성
+    let customers = [];
+    let customerSpawnTimer = 0;
+
+    class Customer {
+      constructor() {
+        this.id = Math.random();
+        this.x = 400 + 60;
+        this.targetX = 80 + Math.random() * 240;
+        this.y = 85;
+        this.patience = 100; // 100%
+        this.patienceSpeed = 0.08 + Math.random() * 0.05;
+        this.wantedCount = Math.floor(Math.random() * 2) + 1; // 1~2개
+        this.color = ['#e74c3c', '#3498db', '#2ecc71', '#9b59b6', '#f1c40f'][Math.floor(Math.random() * 5)];
+        this.faceType = Math.floor(Math.random() * 3);
+        this.state = 'walking'; // walking, waiting, happy, angry
+      }
+
+      update() {
+        if (this.state === 'walking') {
+          if (this.x > this.targetX) {
+            this.x -= 3;
+          } else {
+            this.state = 'waiting';
+          }
+        } else if (this.state === 'waiting') {
+          this.patience -= this.patienceSpeed;
+          if (this.patience <= 0) {
+            this.state = 'angry';
+          }
+        } else if (this.state === 'happy' || this.state === 'angry') {
+          this.y -= 2;
+        }
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+
+        // 손님 몸통 / 얼굴 (레트로 피셀풍)
+        ctx.fillStyle = this.color;
+        ctx.fillRect(-18, -10, 36, 40); // 옷
+
+        // 머리
+        ctx.fillStyle = '#ffdfba';
+        ctx.fillRect(-14, -36, 28, 26);
+
+        // 머리카락
+        ctx.fillStyle = '#2c3e50';
+        ctx.fillRect(-16, -40, 32, 10);
+
+        // 눈/입
+        ctx.fillStyle = '#000';
+        if (this.state === 'angry') {
+          // 화난 눈
+          ctx.fillRect(-10, -28, 6, 2);
+          ctx.fillRect(4, -28, 6, 2);
+          ctx.fillRect(-6, -18, 12, 3); // 입
+        } else if (this.state === 'happy') {
+          // 웃는 눈
+          ctx.fillRect(-10, -28, 6, 3);
+          ctx.fillRect(4, -28, 6, 3);
+          ctx.fillRect(-8, -18, 16, 4);
+        } else {
+          // 일반 눈
+          ctx.fillRect(-9, -28, 4, 4);
+          ctx.fillRect(5, -28, 4, 4);
+          ctx.fillRect(-5, -18, 10, 2);
+        }
+
+        // 주문 말풍선 (waiting 상태일 때)
+        if (this.state === 'waiting') {
+          ctx.fillStyle = '#ffffff';
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.roundRect(-30, -85, 60, 38, 6);
+          ctx.fill();
+          ctx.stroke();
+
+          // 말풍선 꼬리
+          ctx.beginPath();
+          ctx.moveTo(-5, -47);
+          ctx.lineTo(0, -40);
+          ctx.lineTo(5, -47);
+          ctx.fill();
+          ctx.stroke();
+
+          // 붕어빵 요구 개수 표시
+          ctx.fillStyle = '#d35400';
+          ctx.font = 'bold 12px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(`🐟 x ${this.wantedCount}`, 0, -62);
+
+          // 인내심 게이지 바
+          ctx.fillStyle = '#444';
+          ctx.fillRect(-22, -54, 44, 5);
+          ctx.fillStyle = this.patience > 40 ? '#2ecc71' : '#e74c3c';
+          ctx.fillRect(-22, -54, (44 * this.patience) / 100, 5);
+        }
+
+        ctx.restore();
+      }
+    }
+
+    // --- 게임 루프 및 로직 ---
+    function updateMolds() {
+      molds.forEach((mold) => {
+        if (mold.state === STATE.POURED) {
+          mold.timer += 1;
+          if (mold.timer > 160) { // 2.6초 후 익음 -> 뒤집을 시간!
+            // 안내
+          }
+        } else if (mold.state === STATE.FLIPPED) {
+          mold.timer += 1;
+          if (mold.timer > 320) { // 뒤집은 후 2.6초 더 지나면 완벽!
+            mold.state = STATE.PERFECT;
+          }
+        } else if (mold.state === STATE.PERFECT) {
+          mold.timer += 1;
+          if (mold.timer > 620) { // 황금기가 지나면 타버림!
+            mold.state = STATE.BURNT;
+            playSound('burnt');
+          }
+        }
+      });
+    }
+
+    function updateCustomers() {
+      // 새로운 손님 스폰
+      if (customers.length < 3) {
+        customerSpawnTimer++;
+        if (customerSpawnTimer > 120) {
+          customers.push(new Customer());
+          customerSpawnTimer = 0;
+        }
+      }
+
+      for (let i = customers.length - 1; i >= 0; i--) {
+        const c = customers[i];
+        c.update();
+
+        // 화나서 가버림
+        if (c.state === 'angry' && c.y < -50) {
+          customers.splice(i, 1);
+          score = Math.max(0, score - 30); // 페널티
+          updateHUD();
+        } else if (c.state === 'happy' && c.y < -50) {
+          customers.splice(i, 1);
+        }
+      }
+    }
+
+    // --- 2버튼 핵심 조작 ---
+    function handleSelect() {
+      if (!isPlaying) return;
+      selectedMoldIndex = (selectedMoldIndex + 1) % molds.length;
+      playSound('select');
+    }
+
+    function handleAction() {
+      if (!isPlaying) return;
+
+      const mold = molds[selectedMoldIndex];
+
+      if (mold.state === STATE.EMPTY) {
+        // 1. 반죽 부으기
+        mold.state = STATE.POURED;
+        mold.timer = 0;
+        playSound('pour');
+      } else if (mold.state === STATE.POURED) {
+        // 2. 뒤집기
+        mold.state = STATE.FLIPPED;
+        playSound('flip');
+      } else if (mold.state === STATE.PERFECT) {
+        // 3. 완벽히 익은 붕어빵 -> 손님에게 서빙!
+        // 기다리는 손님 중 가장 먼저 들어온 손님
+        const waitingCustomer = customers.find(c => c.state === 'waiting');
+        if (waitingCustomer) {
+          waitingCustomer.wantedCount--;
+          score += 100;
+          playSound('serve');
+
+          if (waitingCustomer.wantedCount <= 0) {
+            waitingCustomer.state = 'happy';
+            score += 50; // 추가 팁!
+          }
+          mold.state = STATE.EMPTY;
+          mold.timer = 0;
+          updateHUD();
+        } else {
+          // 손님이 없는데 꺼내면 붕어빵 보관소(단순 점수)
+          score += 50;
+          playSound('serve');
+          mold.state = STATE.EMPTY;
+          mold.timer = 0;
+          updateHUD();
+        }
+      } else if (mold.state === STATE.BURNT) {
+        // 4. 탄 붕어빵 청소
+        mold.state = STATE.EMPTY;
+        mold.timer = 0;
+        score = Math.max(0, score - 20);
+        playSound('burnt');
+        updateHUD();
+      }
+    }
+
+    // --- 렌더링 (HTML5 Canvas Pixel Art) ---
+    function drawGrid() {
+      // 배경 매대
+      ctx.fillStyle = '#2c1e11';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 손님 영역 (상단)
+      ctx.fillStyle = '#5c3d22';
+      ctx.fillRect(0, 0, canvas.width, 160);
+      ctx.fillStyle = '#3a2513';
+      ctx.fillRect(0, 150, canvas.width, 10); // 가판대 선
+
+      // 붕어빵 틀 영역 (하단 2x3 배치)
+      const startX = 35;
+      const startY = 190;
+      const cellW = 100;
+      const cellH = 120;
+      const gapX = 20;
+      const gapY = 20;
+
+      for (let i = 0; i < molds.length; i++) {
+        const row = Math.floor(i / 3);
+        const col = i % 3;
+        const x = startX + col * (cellW + gapX);
+        const y = startY + row * (cellH + gapY);
+
+        const isSelected = (i === selectedMoldIndex);
+
+        // 틀 베이스
+        ctx.fillStyle = '#1e1b18';
+        ctx.strokeStyle = isSelected ? '#f1c40f' : '#4a3b32';
+        ctx.lineWidth = isSelected ? 4 : 2;
+        ctx.beginPath();
+        ctx.roundRect(x, y, cellW, cellH, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        // 선택 커서 표시 (반짝이는 테두리 / 번호)
+        if (isSelected) {
+          ctx.fillStyle = '#f1c40f';
+          ctx.font = 'bold 12px monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(`▶ 틀 #${i+1}`, x + 6, y - 6);
+        } else {
+          ctx.fillStyle = '#888';
+          ctx.font = '11px monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(`#${i+1}`, x + 6, y - 6);
+        }
+
+        // 틀 안의 붕어빵 구이 홈
+        ctx.fillStyle = '#0f0d0b';
+        ctx.beginPath();
+        ctx.ellipse(x + cellW/2, y + cellH/2 + 5, 38, 28, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 붕어빵 상태별 그리기
+        const mold = molds[i];
+        drawBungeoppang(x + cellW/2, y + cellH/2 + 5, mold);
+      }
+    }
+
+    function drawBungeoppang(cx, cy, mold) {
+      if (mold.state === STATE.EMPTY) {
+        ctx.fillStyle = '#554433';
+        ctx.font = '12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('빈 틀', cx, cy + 4);
+        return;
+      }
+
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      if (mold.state === STATE.POURED) {
+        // 하얀 반죽 부어진 상태
+        ctx.fillStyle = '#f5f6fa';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 32, 22, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 게이지 바 (익는 중)
+        const p = Math.min(1, mold.timer / 160);
+        ctx.fillStyle = '#e1b12c';
+        ctx.fillRect(-25, 26, 50 * p, 4);
+
+        ctx.fillStyle = '#2c3e50';
+        ctx.font = 'bold 11px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('익는중..', 0, 4);
+
+      } else if (mold.state === STATE.FLIPPED) {
+        // 뒤집혀서 노릇노릇해지는 중
+        ctx.fillStyle = '#e67e22';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 34, 24, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 붕어 꼬리 및 눈 지느러미 디테일
+        drawFishDetails('#d35400');
+
+        const p = Math.min(1, (mold.timer - 160) / 160);
+        ctx.fillStyle = '#2ecc71';
+        ctx.fillRect(-25, 26, 50 * p, 4);
+
+      } else if (mold.state === STATE.PERFECT) {
+        // 황금빛 완벽하게 노릇노릇한 붕어빵!
+        ctx.fillStyle = '#f39c12';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 36, 25, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        drawFishDetails('#b7950b');
+
+        // 반짝이는 빛 효과
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(-12, -8, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#27ae60';
+        ctx.font = 'bold 12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('✨완성! (서빙)', 0, 34);
+
+      } else if (mold.state === STATE.BURNT) {
+        // 시커멓게 탄 붕어빵
+        ctx.fillStyle = '#2d3436';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 36, 25, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        drawFishDetails('#636e72');
+
+        // 연기 효과
+        ctx.fillStyle = 'rgba(200, 200, 200, 0.5)';
+        ctx.beginPath();
+        ctx.arc(-6, -20 - (mold.timer % 10), 5, 0, Math.PI*2);
+        ctx.arc(8, -25 - (mold.timer % 15), 7, 0, Math.PI*2);
+        ctx.fill();
+
+        ctx.fillStyle = '#e74c3c';
+        ctx.font = 'bold 12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🔥탄빵! (청소)', 0, 34);
+      }
+
+      ctx.restore();
+    }
+
+    function drawFishDetails(strokeColor) {
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 2;
+
+      // 꼬리
+      ctx.beginPath();
+      ctx.moveTo(25, -5);
+      ctx.lineTo(38, -12);
+      ctx.lineTo(38, 12);
+      ctx.lineTo(25, 5);
+      ctx.stroke();
+
+      // 비늘
+      ctx.beginPath();
+      ctx.arc(-5, 0, 6, -Math.PI/2, Math.PI/2);
+      ctx.arc(6, 0, 6, -Math.PI/2, Math.PI/2);
+      ctx.stroke();
+
+      // 눈
+      ctx.fillStyle = strokeColor;
+      ctx.beginPath();
+      ctx.arc(-22, -5, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 손님 배치 및 가판대 그리기
+      drawGrid();
+
+      // 손님들 그리기
+      customers.forEach(c => c.draw(ctx));
+    }
+
+    function gameLoop() {
+      if (isPlaying) {
+        updateMolds();
+        updateCustomers();
+      }
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    // --- HUD 및 타이머 ---
+    function updateHUD() {
+      document.getElementById('score-display').textContent = score;
+      document.getElementById('time-display').textContent = timeLeft;
+    }
+
+    function startGame() {
+      initAudio();
+      score = 0;
+      timeLeft = 60;
+      selectedMoldIndex = 0;
+      molds.forEach(m => { m.state = STATE.EMPTY; m.timer = 0; });
+      customers = [new Customer()];
+      isPlaying = true;
+
+      document.getElementById('overlay').classList.add('hidden');
+      updateHUD();
+
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (!isPlaying) return;
+        timeLeft--;
+        updateHUD();
+
+        if (timeLeft <= 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      isPlaying = false;
+      clearInterval(timerInterval);
+      playSound('over');
+
+      let rank = '붕어빵 초보자 🐟';
+      if (score >= 1200) rank = '전설의 붕어빵 명인 🏆';
+      else if (score >= 800) rank = '줄 서서 먹는 붕어빵 맛집 🌟';
+      else if (score >= 400) rank = '숙련된 붕어빵 장사꾼 👍';
+
+      document.getElementById('overlay-title').textContent = '장사 종료!';
+      document.getElementById('overlay-msg').style.display = 'none';
+      document.getElementById('result-box').style.display = 'block';
+      document.getElementById('final-score-val').textContent = `${score}점`;
+      document.getElementById('rank-val').textContent = rank;
+      document.getElementById('start-btn').textContent = '🔄 다시하기';
+
+      document.getElementById('overlay').classList.remove('hidden');
+    }
+
+    // --- 이벤트 리스너 ---
+    document.getElementById('btn-select').addEventListener('click', handleSelect);
+    document.getElementById('btn-action').addEventListener('click', handleAction);
+    document.getElementById('start-btn').addEventListener('click', startGame);
+
+    // 키보드 컨트롤 지원 (Z/Left = SELECT, X/Space = ACTION)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'z' || e.key === 'Z' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handleSelect();
+      } else if (e.key === 'x' || e.key === 'X' || e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        if (!isPlaying && !document.getElementById('overlay').classList.contains('hidden')) {
+          startGame();
+        } else {
+          handleAction();
+        }
+      }
+    });
+
+    // 최초 루프 실행 및 초기 화면 그리기
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
